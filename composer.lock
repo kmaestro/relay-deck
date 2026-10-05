@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e9d27fdff0e922a2ea2375696c14ef0a",
+    "content-hash": "f2dfc62f0ca3b8b75134456e203bdc87",
     "packages": [
         {
             "name": "boson-php/cpu-info",

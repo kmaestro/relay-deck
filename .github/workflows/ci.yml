@@ -1,0 +1,121 @@
+name: Tests, build and release
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  COMPOSER_PROCESS_TIMEOUT: 0
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, curl, dom, ffi, filter, iconv, json, libxml, mbstring, openssl, pdo_sqlite, phar, tokenizer, xml, xmlwriter, zlib
+          ini-values: ffi.enable=1, phar.readonly=0, memory_limit=512M
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate Composer files
+        run: composer validate --strict --no-check-publish
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Check PHP requirements
+        run: composer check-platform-reqs
+
+      - name: Run tests
+        run: composer test
+
+  build:
+    name: Build
+    needs: tests
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && !github.event.deleted }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, curl, dom, ffi, filter, iconv, json, libxml, mbstring, openssl, pdo_sqlite, phar, tokenizer, xml, xmlwriter, zlib
+          ini-values: ffi.enable=1, phar.readonly=0, memory_limit=512M
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Check PHP requirements
+        run: composer check-platform-reqs
+
+      - name: Build all targets
+        run: composer compile -- --no-interaction --no-ansi
+
+      - name: Package builds
+        run: |
+          mkdir -p build/packages
+          for target in linux/amd64 linux/aarch64 windows/amd64 macos/amd64 macos/aarch64 phar; do
+            archive="relay-deck-${target//\//-}.tar.gz"
+            tar -czf "build/packages/$archive" -C "build/$target" .
+          done
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v7
+        with:
+          name: relay-deck-builds
+          path: build/packages/*.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download builds
+        uses: actions/download-artifact@v8
+        with:
+          name: relay-deck-builds
+          path: packages
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if ! gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" \
+              --repo "$GH_REPO" \
+              --verify-tag \
+              --draft \
+              --generate-notes \
+              --title "RelayDeck $RELEASE_TAG"
+          fi
+          gh release upload "$RELEASE_TAG" packages/*.tar.gz --repo "$GH_REPO" --clobber
+          gh release edit "$RELEASE_TAG" --repo "$GH_REPO" --draft=false
