@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>RelayDeck</title>
+    <!-- APP_FAVICON -->
+    <!-- APP_STYLES -->
+</head>
+<body>
+<div class="app-shell is-booting" id="appShell">
+    <header class="topbar">
+        <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Open navigation">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="brand">
+            <!-- APP_ICON -->
+            <div class="brand-copy">
+                <strong>RelayDeck</strong>
+                <span>Local HTTP workbench</span>
+            </div>
+        </div>
+        <div class="database-picker" id="databasePicker">
+            <span class="database-icon" aria-hidden="true">DB</span>
+            <label for="databaseSelect">Database</label>
+            <select id="databaseSelect" aria-label="Active database"></select>
+            <button class="icon-button" id="manageDatabasesButton" type="button" aria-label="Add database" title="Open or create database">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="10" cy="6" rx="6" ry="3"/><path d="M4 6v6c0 1.7 2.7 3 6 3 1 0 2-.1 2.8-.4M4 12v5c0 1.7 2.7 3 6 3 1 0 1.9-.1 2.7-.4M17 14v6M14 17h6"/></svg>
+            </button>
+        </div>
+        <div class="topbar-spacer"></div>
+        <div class="environment-picker">
+            <span class="environment-dot" id="environmentDot"></span>
+            <label for="environmentSelect">Environment</label>
+            <select id="environmentSelect" aria-label="Active environment"></select>
+            <button class="icon-button" id="manageEnvironmentsButton" type="button" aria-label="Manage environments" title="Manage environments">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.55V21h-4v-.09A1.7 1.7 0 0 0 8.96 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15.04 1.7 1.7 0 0 0 3.05 14H3v-4h.05A1.7 1.7 0 0 0 4.6 8.96a1.7 1.7 0 0 0-.34-1.87l-.06-.06L7.03 4.2l.06.06a1.7 1.7 0 0 0 1.87.34A1.7 1.7 0 0 0 10 3.05V3h4v.05a1.7 1.7 0 0 0 1.04 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06 2.83 2.83-.06.06a1.7 1.7 0 0 0-.34 1.87A1.7 1.7 0 0 0 20.95 10H21v4h-.05A1.7 1.7 0 0 0 19.4 15Z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-tabs" role="tablist" aria-label="Navigation">
+                <button class="sidebar-tab is-active" type="button" data-sidebar-tab="collections">Collections</button>
+                <button class="sidebar-tab" type="button" data-sidebar-tab="history">History</button>
+            </div>
+
+            <section class="sidebar-panel is-active" id="collectionsPanel" data-sidebar-panel="collections">
+                <div class="sidebar-toolbar">
+                    <div>
+                        <span class="eyebrow">Workspace</span>
+                        <h2>Collections</h2>
+                    </div>
+                    <button class="icon-button accent-icon" id="addCollectionButton" type="button" title="New collection" aria-label="New collection">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                </div>
+                <label class="search-box">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+                    <input id="collectionSearch" type="search" placeholder="Filter requests" autocomplete="off">
+                </label>
+                <div class="tree" id="collectionsTree"></div>
+            </section>
+
+            <section class="sidebar-panel" id="historyPanel" data-sidebar-panel="history">
+                <div class="sidebar-toolbar">
+                    <div>
+                        <span class="eyebrow">Recent</span>
+                        <h2>History</h2>
+                    </div>
+                    <button class="text-button danger-text" id="clearHistoryButton" type="button">Clear</button>
+                </div>
+                <div class="history-list" id="historyList"></div>
+            </section>
+        </aside>
+
+        <div class="sidebar-resizer" id="sidebarResizer" role="separator" aria-label="Resize sidebar" aria-orientation="vertical"></div>
+
+        <main class="workspace">
+            <section class="request-pane">
+                <div class="request-heading">
+                    <div class="request-identity">
+                        <span class="dirty-dot" id="dirtyDot" aria-label="Unsaved changes"></span>
+                        <h1 id="requestTitle">Untitled request</h1>
+                    </div>
+                    <div class="request-actions">
+                        <button class="ghost-button" id="exportCurlButton" type="button" title="Export as cURL" aria-label="Export as cURL">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16"/></svg>
+                            cURL
+                        </button>
+                        <button class="ghost-button" id="newRequestButton" type="button">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                            New
+                        </button>
+                        <button class="ghost-button" id="saveRequestButton" type="button">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5V4Z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg>
+                            Save
+                        </button>
+                        <button class="icon-button" id="saveAsRequestButton" type="button" title="Save as" aria-label="Save as">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5V4Z"/><path d="M8 4v6h8V4M8 20v-6h8v6M18 12v6M15 15h6"/></svg>
+                        </button>
+                        <button class="icon-button danger-hover is-hidden" id="deleteRequestButton" type="button" title="Delete saved request" aria-label="Delete saved request">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <form class="request-bar" id="requestForm">
+                    <div class="method-select-wrap" data-method="GET">
+                        <select id="methodSelect" aria-label="HTTP method">
+                            <option>GET</option>
+                            <option>POST</option>
+                            <option>PUT</option>
+                            <option>PATCH</option>
+                            <option>DELETE</option>
+                            <option>HEAD</option>
+                            <option>OPTIONS</option>
+                        </select>
+                    </div>
+                    <div class="url-field" id="urlField">
+                        <input class="url-input" id="urlInput" type="text" inputmode="url" spellcheck="false" autocomplete="off" placeholder="https://api.example.com/users or {{base_url}}/users" aria-label="Request URL" data-variable-input role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="variableSuggestions">
+                    </div>
+                    <label class="timeout-field" title="Request timeout">
+                        <input id="timeoutInput" type="number" min="1" max="120" step="1" value="30" aria-label="Timeout in seconds">
+                        <span>s</span>
+                    </label>
+                    <button class="send-button" id="sendButton" type="submit">
+                        <span class="send-label">Send</span>
+                        <span class="button-spinner" aria-hidden="true"></span>
+                        <kbd>⌘↵</kbd>
+                    </button>
+                </form>
+
+                <div class="editor-tabs" role="tablist" aria-label="Request editor">
+                    <button class="editor-tab is-active" type="button" data-request-tab="params">Params <span class="tab-count" id="paramsCount">0</span></button>
+                    <button class="editor-tab" type="button" data-request-tab="auth">Auth</button>
+                    <button class="editor-tab" type="button" data-request-tab="headers">Headers <span class="tab-count" id="headersCount">0</span></button>
+                    <button class="editor-tab" type="button" data-request-tab="body">Body <span class="tab-dot" id="bodyDot"></span></button>
+                </div>
+
+                <div class="editor-content">
+                    <section class="request-editor is-active" data-request-panel="params">
+                        <div class="panel-intro">
+                            <div>
+                                <h3>Query parameters</h3>
+                                <p>Enabled rows are appended to the URL when the request is sent.</p>
+                            </div>
+                            <button class="small-button" type="button" data-add-row="params">+ Add parameter</button>
+                        </div>
+                        <div class="key-value-editor" id="paramsEditor"></div>
+                    </section>
+
+                    <section class="request-editor" data-request-panel="auth">
+                        <div class="auth-grid">
+                            <div>
+                                <label class="field-label" for="authType">Authorization type</label>
+                                <select class="field-control" id="authType">
+                                    <option value="none">No Auth</option>
+                                    <option value="bearer">Bearer Token</option>
+                                    <option value="basic">Basic Auth</option>
+                                    <option value="api_key">API Key</option>
+                                </select>
+                                <p class="field-help">Authorization is added by PHP immediately before sending.</p>
+                            </div>
+                            <div class="auth-config">
+                                <div class="auth-section is-active" data-auth-section="none">
+                                    <div class="inline-empty">
+                                        <span class="empty-orbit"></span>
+                                        <div><strong>No authorization</strong><p>This request will be sent without generated credentials.</p></div>
+                                    </div>
+                                </div>
+                                <div class="auth-section" data-auth-section="bearer">
+                                    <label class="field-label" for="bearerToken">Token</label>
+                                    <input class="field-control mono" id="bearerToken" type="password" placeholder="{{token}}" autocomplete="off">
+                                </div>
+                                <div class="auth-section two-fields" data-auth-section="basic">
+                                    <label><span class="field-label">Username</span><input class="field-control" id="basicUsername" type="text" autocomplete="off"></label>
+                                    <label><span class="field-label">Password</span><input class="field-control" id="basicPassword" type="password" autocomplete="off"></label>
+                                </div>
+                                <div class="auth-section api-key-fields" data-auth-section="api_key">
+                                    <label><span class="field-label">Key</span><input class="field-control mono" id="apiKeyName" type="text" placeholder="X-API-Key" autocomplete="off"></label>
+                                    <label><span class="field-label">Value</span><input class="field-control mono" id="apiKeyValue" type="password" placeholder="{{token}}" autocomplete="off"></label>
+                                    <label><span class="field-label">Add to</span><select class="field-control" id="apiKeyLocation"><option value="header">Header</option><option value="query">Query parameter</option></select></label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="request-editor" data-request-panel="headers">
+                        <div class="panel-intro">
+                            <div>
+                                <h3>Request headers</h3>
+                                <p>Content-Type and Authorization can be generated automatically.</p>
+                            </div>
+                            <button class="small-button" type="button" data-add-row="headers">+ Add header</button>
+                        </div>
+                        <div class="key-value-editor" id="headersEditor"></div>
+                    </section>
+
+                    <section class="request-editor body-editor" data-request-panel="body">
+                        <div class="body-type-switch" id="bodyTypeSwitch" role="radiogroup" aria-label="Body type">
+                            <button class="is-active" type="button" data-body-type="none">None</button>
+                            <button type="button" data-body-type="json">JSON</button>
+                            <button type="button" data-body-type="raw">Raw text</button>
+                            <button type="button" data-body-type="form">Form URL encoded</button>
+                            <button type="button" data-body-type="multipart">Multipart</button>
+                        </div>
+                        <div class="body-panel is-active" data-body-panel="none">
+                            <div class="large-empty">
+                                <span class="empty-orbit large"></span>
+                                <strong>This request has no body</strong>
+                                <p>Select a body type above to add request content.</p>
+                            </div>
+                        </div>
+                        <div class="body-panel code-panel" data-body-panel="json">
+                            <div class="code-toolbar"><span>application/json</span><button class="text-button" id="formatJsonButton" type="button">Format JSON</button></div>
+                            <div class="json-code-editor">
+                                <pre class="code-input json-highlight-layer" id="jsonBodyHighlight" aria-hidden="true"></pre>
+                                <textarea class="code-input json-code-input" id="jsonBodyInput" wrap="off" spellcheck="false" aria-label="JSON request body" placeholder="{&#10;  &quot;name&quot;: &quot;Ada&quot;&#10;}"></textarea>
+                            </div>
+                        </div>
+                        <div class="body-panel code-panel" data-body-panel="raw">
+                            <div class="code-toolbar"><span>text/plain; charset=utf-8</span></div>
+                            <textarea class="code-input" id="rawBodyInput" spellcheck="false" placeholder="Request body"></textarea>
+                        </div>
+                        <div class="body-panel" data-body-panel="form">
+                            <div class="panel-intro compact"><div><h3>Form fields</h3><p>Sent as application/x-www-form-urlencoded.</p></div><button class="small-button" type="button" data-add-row="form">+ Add field</button></div>
+                            <div class="key-value-editor" id="formEditor"></div>
+                        </div>
+                        <div class="body-panel" data-body-panel="multipart">
+                            <div class="panel-intro compact"><div><h3>Multipart fields</h3><p>Text values and local file content are encoded by PHP.</p></div><button class="small-button" type="button" data-add-row="multipart">+ Add field</button></div>
+                            <div class="key-value-editor multipart-editor" id="multipartEditor"></div>
+                            <p class="upload-limit" id="uploadLimitText">Files are kept in memory only for the current request.</p>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section class="response-pane" id="responsePane">
+                <div class="response-heading">
+                    <div class="response-title-row">
+                        <h2>Response</h2>
+                        <div class="response-stats is-hidden" id="responseStats">
+                            <span class="status-pill" id="responseStatus"></span>
+                            <span id="responseTime"></span>
+                            <span id="responseSize"></span>
+                            <span class="truncated-pill is-hidden" id="truncatedPill">Display limited</span>
+                        </div>
+                    </div>
+                    <div class="response-controls is-hidden" id="responseControls">
+                        <button class="segmented-button is-active" type="button" data-response-tab="body">Body</button>
+                        <button class="segmented-button" type="button" data-response-tab="preview">Preview</button>
+                        <button class="segmented-button" type="button" data-response-tab="headers">Headers <span id="responseHeaderCount">0</span></button>
+                    </div>
+                </div>
+
+                <div class="response-content">
+                    <div class="response-empty" id="responseEmpty">
+                        <div class="signal-illustration"><i></i><i></i><i></i><span></span></div>
+                        <strong>Ready when you are</strong>
+                        <p>Enter a URL and send a request. The response will appear here.</p>
+                        <span class="shortcut-hint"><kbd>Ctrl/⌘</kbd><b>+</b><kbd>Enter</kbd></span>
+                    </div>
+                    <div class="response-loading is-hidden" id="responseLoading">
+                        <div class="loader-orbit"><span></span></div>
+                        <strong>Contacting the server…</strong>
+                        <p>HTTP runs in PHP, so browser CORS rules do not apply.</p>
+                    </div>
+                    <div class="response-error is-hidden" id="responseError">
+                        <div class="error-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9 2.6 17.2A2 2 0 0 0 4.3 20h15.4a2 2 0 0 0 1.7-2.8L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+                        </div>
+                        <div><span class="error-kind" id="responseErrorType">Connection error</span><strong id="responseErrorMessage"></strong><p id="responseErrorDetails"></p></div>
+                    </div>
+                    <section class="response-panel is-hidden" data-response-panel="body" id="responseBodyPanel">
+                        <div class="response-body-toolbar">
+                            <div class="body-view-switch">
+                                <button class="is-active" type="button" data-body-view="pretty">Pretty</button>
+                                <button type="button" data-body-view="raw">Raw</button>
+                            </div>
+                            <span id="responseEncoding"></span>
+                            <button class="text-button" id="copyResponseButton" type="button">Copy</button>
+                        </div>
+                        <pre class="response-body" id="responseBody"></pre>
+                    </section>
+                    <section class="response-panel is-hidden" data-response-panel="headers" id="responseHeadersPanel">
+                        <div class="response-headers" id="responseHeaders"></div>
+                    </section>
+                    <section class="response-panel is-hidden" data-response-panel="preview" id="responsePreviewPanel">
+                        <div class="response-preview" id="responsePreview"></div>
+                    </section>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="boot-overlay" id="bootOverlay">
+        <div class="boot-card">
+            <!-- APP_ICON -->
+            <div class="loader-line"><span></span></div>
+            <strong>Opening local workspace</strong>
+            <p>Preparing SQLite and Boson bindings…</p>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-backdrop is-hidden" id="curlModal" role="dialog" aria-modal="true" aria-labelledby="curlModalTitle">
+    <div class="modal-card small-modal curl-modal-card">
+        <div class="modal-heading"><div><span class="eyebrow">bash / zsh</span><h2 id="curlModalTitle">Export as cURL</h2></div><button class="icon-button" type="button" data-close-modal="curlModal" aria-label="Close">×</button></div>
+        <textarea class="code-input curl-command" id="curlCommand" readonly spellcheck="false" aria-label="cURL command"></textarea>
+        <div class="modal-actions"><button class="ghost-button" type="button" data-close-modal="curlModal">Close</button><button class="primary-button" id="copyCurlButton" type="button">Copy command</button></div>
+    </div>
+</div>
+
+<div class="modal-backdrop is-hidden" id="entityModal" role="dialog" aria-modal="true" aria-labelledby="entityModalTitle">
+    <form class="modal-card small-modal" id="entityModalForm">
+        <div class="modal-heading"><div><span class="eyebrow" id="entityModalEyebrow">Workspace</span><h2 id="entityModalTitle">New collection</h2></div><button class="icon-button" type="button" data-close-modal="entityModal" aria-label="Close">×</button></div>
+        <label><span class="field-label" id="entityNameLabel">Name</span><input class="field-control" id="entityNameInput" type="text" maxlength="160" autocomplete="off" required></label>
+        <label id="entityDescriptionField"><span class="field-label">Description <em>optional</em></span><textarea class="field-control compact-textarea" id="entityDescriptionInput"></textarea></label>
+        <div class="modal-actions"><button class="ghost-button" type="button" data-close-modal="entityModal">Cancel</button><button class="primary-button" id="entityModalSubmit" type="submit">Create</button></div>
+    </form>
+</div>
+
+<div class="modal-backdrop is-hidden" id="saveModal" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
+    <form class="modal-card small-modal" id="saveModalForm">
+        <div class="modal-heading"><div><span class="eyebrow">Collection</span><h2 id="saveModalTitle">Save request</h2></div><button class="icon-button" type="button" data-close-modal="saveModal" aria-label="Close">×</button></div>
+        <label><span class="field-label">Request name</span><input class="field-control" id="saveRequestName" type="text" maxlength="160" required autocomplete="off"></label>
+        <div class="two-fields">
+            <label><span class="field-label">Collection</span><select class="field-control" id="saveCollectionSelect" required></select></label>
+            <label><span class="field-label">Folder</span><select class="field-control" id="saveFolderSelect"></select></label>
+        </div>
+        <div class="modal-actions"><button class="ghost-button" type="button" data-close-modal="saveModal">Cancel</button><button class="primary-button" type="submit">Save request</button></div>
+    </form>
+</div>
+
+<div class="modal-backdrop is-hidden" id="databaseModal" role="dialog" aria-modal="true" aria-labelledby="databaseModalTitle">
+    <div class="modal-card small-modal database-modal-card">
+        <div class="modal-heading">
+            <div><span class="eyebrow">Workspace</span><h2 id="databaseModalTitle">Add database</h2></div>
+            <button class="icon-button" type="button" data-close-modal="databaseModal" aria-label="Close">×</button>
+        </div>
+        <p class="database-modal-copy">Each RelayDeck <code>.sqlite</code> file has its own collections, history and environments.</p>
+        <div class="database-choice-grid">
+            <button class="database-choice" id="openExistingDatabaseButton" type="button">
+                <span class="database-choice-icon">↗</span>
+                <span><strong>Open existing</strong><small>Select an existing RelayDeck .sqlite file.</small></span>
+            </button>
+            <button class="database-choice" id="createDatabaseButton" type="button">
+                <span class="database-choice-icon">+</span>
+                <span><strong>Create new</strong><small>Enter a filename, then select its folder.</small></span>
+            </button>
+        </div>
+        <div class="modal-actions"><button class="ghost-button" type="button" data-close-modal="databaseModal">Cancel</button></div>
+    </div>
+</div>
+
+<div class="modal-backdrop is-hidden" id="environmentModal" role="dialog" aria-modal="true" aria-labelledby="environmentModalTitle">
+    <div class="modal-card environment-modal-card">
+        <aside class="environment-list-pane">
+            <div class="modal-heading compact-heading"><div><span class="eyebrow">Workspace</span><h2 id="environmentModalTitle">Environments</h2></div></div>
+            <div class="environment-list" id="environmentList"></div>
+            <button class="small-button full-width" id="newEnvironmentButton" type="button">+ New environment</button>
+        </aside>
+        <form class="environment-form" id="environmentForm">
+            <div class="modal-heading">
+                <div class="environment-name-field">
+                    <div class="environment-name-meta">
+                        <label class="field-label" for="environmentNameInput">Environment name</label>
+                        <span class="eyebrow" id="environmentFormEyebrow">Edit environment</span>
+                    </div>
+                    <input class="field-control modal-title-input" id="environmentNameInput" type="text" maxlength="120" placeholder="Environment name" autocomplete="off" required>
+                </div>
+                <button class="icon-button" type="button" data-close-modal="environmentModal" aria-label="Close">×</button>
+            </div>
+            <div class="environment-variable-heading"><div><h3>Variables</h3><p>Use values as <code>{{variable_name}}</code> in any request field.</p></div><button class="small-button" id="addEnvironmentVariable" type="button">+ Add variable</button></div>
+            <div class="environment-variables" id="environmentVariables"></div>
+            <div class="modal-actions environment-actions">
+                <button class="ghost-button danger-text is-hidden" id="deleteEnvironmentButton" type="button">Delete</button>
+                <span></span>
+                <button class="ghost-button" type="button" data-close-modal="environmentModal">Cancel</button>
+                <button class="primary-button" type="submit">Save environment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-backdrop is-hidden" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal-card confirm-card">
+        <div class="confirm-icon">!</div>
+        <h2 id="confirmTitle">Delete item?</h2>
+        <p id="confirmMessage">This action cannot be undone.</p>
+        <div class="modal-actions"><button class="ghost-button" id="confirmCancel" type="button">Cancel</button><button class="danger-button" id="confirmAccept" type="button">Delete</button></div>
+    </div>
+</div>
+
+<div class="variable-suggestions is-hidden" id="variableSuggestions" role="listbox" aria-label="Current environment variables"></div>
+<div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+<template id="keyValueRowTemplate">
+    <div class="kv-row">
+        <label class="row-check"><input class="row-enabled" type="checkbox" checked><span></span></label>
+        <input class="row-key" type="text" placeholder="Key" autocomplete="off" spellcheck="false">
+        <input class="row-value" type="text" placeholder="Value" autocomplete="off" spellcheck="false">
+        <button class="row-delete" type="button" title="Remove row" aria-label="Remove row">×</button>
+    </div>
+</template>
+
+<template id="multipartRowTemplate">
+    <div class="kv-row multipart-row">
+        <label class="row-check"><input class="row-enabled" type="checkbox" checked><span></span></label>
+        <input class="row-key" type="text" placeholder="Field name" autocomplete="off" spellcheck="false">
+        <select class="multipart-kind" aria-label="Multipart value type"><option value="text">Text</option><option value="file">File</option></select>
+        <input class="row-value multipart-text-value" type="text" placeholder="Value" autocomplete="off" spellcheck="false">
+        <label class="file-picker is-hidden"><input class="multipart-file-input" type="file"><span class="file-picker-label">Choose file</span></label>
+        <button class="row-delete" type="button" title="Remove row" aria-label="Remove row">×</button>
+    </div>
+</template>
+
+<template id="environmentVariableTemplate">
+    <div class="environment-variable-row">
+        <label class="row-check"><input class="env-enabled" type="checkbox" checked><span></span></label>
+        <input class="env-name mono" type="text" placeholder="variable_name" autocomplete="off" spellcheck="false">
+        <div class="secret-input-wrap"><input class="env-value mono" type="text" placeholder="Value" autocomplete="off" spellcheck="false"><button class="secret-toggle is-hidden" type="button" title="Reveal secret" aria-label="Reveal secret"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></button></div>
+        <label class="secret-check"><input class="env-secret" type="checkbox"><span>Secret</span></label>
+        <button class="row-delete" type="button" title="Remove variable" aria-label="Remove variable">×</button>
+    </div>
+</template>
+
+<!-- APP_SCRIPT -->
+</body>
+</html>

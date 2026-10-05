@@ -1,0 +1,5 @@
+<svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2" y="2" width="36" height="36" rx="11" fill="#171925" stroke="#303448"/>
+    <path d="M11 23.5L16.4 12h4.2l-2.5 6.1h6.3L29 28h-4.5l-2-4.5H11Z" fill="#8377FF"/>
+    <circle cx="14" cy="27.5" r="2.5" fill="#F5F7FF"/>
+</svg>

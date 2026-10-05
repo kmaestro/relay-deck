@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>Choose storage · RelayDeck</title>
+    <!-- APP_FAVICON -->
+    <!-- APP_STYLES -->
+</head>
+<body>
+<main class="storage-setup-shell">
+    <section class="storage-setup-card" aria-labelledby="storageSetupTitle">
+        <div class="storage-setup-brand">
+            <!-- APP_ICON -->
+            <div><span class="eyebrow"><!-- STORAGE_SETUP_EYEBROW --></span><strong>RelayDeck</strong></div>
+        </div>
+
+        <div class="storage-setup-copy">
+            <h1 id="storageSetupTitle"><!-- STORAGE_SETUP_TITLE --></h1>
+            <p><!-- STORAGE_SETUP_DESCRIPTION --></p>
+        </div>
+
+        <!-- STORAGE_UNAVAILABLE -->
+
+        <div class="storage-setup-options">
+            <div><span>1</span><p><strong><!-- STORAGE_LOCATION_TITLE --></strong><!-- STORAGE_LOCATION_DESCRIPTION --></p></div>
+        </div>
+
+        <aside class="storage-security-note">
+            <strong>Security notice</strong>
+            <p>Authorization values and secret environment variables are stored without encryption. Choose a location you trust.</p>
+        </aside>
+
+        <button class="primary-button storage-choose-button" id="chooseStorageButton" type="button"><!-- STORAGE_CHOOSE_LABEL --></button>
+        <p class="storage-setup-status" id="storageSetupStatus" aria-live="polite"><!-- STORAGE_SETUP_STATUS --></p>
+        <p class="storage-setup-footnote"><!-- STORAGE_SETUP_FOOTNOTE --></p>
+    </section>
+</main>
+
+<!-- APP_SCRIPT -->
+</body>
+</html>

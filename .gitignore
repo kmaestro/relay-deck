@@ -1,0 +1,8 @@
+/vendor/
+/build/
+/.phpunit.cache/
+/storage/*.sqlite
+/storage/*.sqlite-shm
+/storage/*.sqlite-wal
+/storage/settings.json*
+/.idea/

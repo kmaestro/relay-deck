@@ -1,0 +1,67 @@
+{
+    "name": "relay-deck",
+    "entrypoint": "index.php",
+    "output": "./build",
+    "target": [
+        {
+            "type": "windows",
+            "arch": "amd64"
+        },
+        {
+            "type": "linux",
+            "arch": "amd64"
+        },
+        {
+            "type": "linux",
+            "arch": "arm64"
+        },
+        {
+            "type": "macos",
+            "arch": "amd64"
+        },
+        {
+            "type": "macos",
+            "arch": "arm64"
+        },
+        {
+            "type": "phar"
+        }
+    ],
+    "extensions": [
+        "ctype",
+        "curl",
+        "filter",
+        "iconv",
+        "json",
+        "mbstring",
+        "openssl",
+        "pdo",
+        "pdo_sqlite"
+    ],
+    "build": {
+        "directories": [
+            "resources"
+        ],
+        "finder": [
+            {
+                "directory": "src",
+                "name": "*.php"
+            },
+            {
+                "directory": "vendor",
+                "not-directory": "vendor/boson-php/compiler",
+                "name": "*.php",
+                "not-name": [
+                    "*Test.php",
+                    "*TestCase.php",
+                    ".phpstorm.meta.php"
+                ]
+            }
+        ]
+    },
+    "ini": {
+        "memory_limit": "256M",
+        "opcache.enable": false,
+        "opcache.enable_cli": false
+    }
+}
