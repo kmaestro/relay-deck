@@ -91,4 +91,69 @@ final class ApiBindingsTest extends TestCase
         self::assertSame('unresolved_variable', $unresolved['error']['type']);
         self::assertSame([], $workspace->active()->requests->history());
     }
+
+    public function testHistorySearchUsesCurrentDatabaseAndReturnsNormalSuccessData(): void
+    {
+        $client = $this->createMock(HttpClientInterface::class);
+        $client->expects(self::never())->method('request');
+        $workspace = new WorkspaceManager($this->temporaryDirectory);
+        $workspace->openInitial($this->temporaryDirectory . '/first.sqlite');
+        $bindings = new ApiBindings(new HttpRequestService($client, new VariableResolver()), $workspace);
+        $workspace->active()->requests->addHistory(new HttpRequest('POST', 'https://first.example.test/target'));
+        $workspace->active()->requests->addHistory(new HttpRequest('GET', 'https://first.example.test/other'));
+
+        self::assertSame([
+            'ok' => true,
+            'data' => $workspace->active()->requests->history(search: 'target'),
+        ], $bindings->searchHistory('TARGET'));
+        self::assertSame([
+            'ok' => true,
+            'data' => $workspace->active()->requests->history(),
+        ], $bindings->searchHistory());
+        self::assertSame(['ok' => true, 'data' => []], $bindings->searchHistory('missing'));
+
+        $workspace->openInitial($this->temporaryDirectory . '/second.sqlite');
+        self::assertSame(['ok' => true, 'data' => []], $bindings->searchHistory('target'));
+        $workspace->active()->requests->addHistory(new HttpRequest('PATCH', 'https://second.example.test/target'));
+
+        $result = $bindings->searchHistory('target');
+        self::assertTrue($result['ok']);
+        self::assertCount(1, $result['data']);
+        self::assertSame('https://second.example.test/target', $result['data'][0]['url']);
+    }
+
+    public function testHistorySearchWrapsAnUnavailableWorkspaceError(): void
+    {
+        $workspace = new WorkspaceManager($this->temporaryDirectory);
+        $bindings = new ApiBindings(
+            new HttpRequestService($this->createStub(HttpClientInterface::class), new VariableResolver()),
+            $workspace,
+        );
+
+        self::assertSame([
+            'ok' => false,
+            'error' => [
+                'type' => 'application_error',
+                'message' => 'No RelayDeck database is active.',
+                'details' => [],
+            ],
+        ], $bindings->searchHistory('target'));
+    }
+
+    public function testHistorySearchWrapsStorageErrors(): void
+    {
+        $workspace = new WorkspaceManager($this->temporaryDirectory);
+        $workspace->openInitial($this->temporaryDirectory . '/broken.sqlite');
+        $workspace->active()->database->connection()->exec('DROP TABLE history');
+        $bindings = new ApiBindings(
+            new HttpRequestService($this->createStub(HttpClientInterface::class), new VariableResolver()),
+            $workspace,
+        );
+
+        $result = $bindings->searchHistory('target');
+
+        self::assertFalse($result['ok']);
+        self::assertSame('application_error', $result['error']['type']);
+        self::assertStringContainsString('no such table: history', $result['error']['message']);
+    }
 }

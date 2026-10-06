@@ -42,11 +42,18 @@ final class Database
             throw new \RuntimeException(sprintf('Unable to create storage directory "%s".', $directory));
         }
 
-        $this->connection = new PDO('sqlite:' . $this->pathname, options: [
+        $this->connection = PDO::connect('sqlite:' . $this->pathname, options: [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
         ]);
+        // SQLite's built-in lower() only handles ASCII characters.
+        $this->connection->createFunction(
+            'relaydeck_lower',
+            static fn (string $value): string => mb_strtolower($value, 'UTF-8'),
+            1,
+            \Pdo\Sqlite::DETERMINISTIC,
+        );
 
         if ($createNew) {
             @chmod($this->pathname, 0600);

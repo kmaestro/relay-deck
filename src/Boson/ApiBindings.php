@@ -36,6 +36,7 @@ final readonly class ApiBindings
         $webView->bindings->bind('api.folder.create', $this->createFolder(...));
         $webView->bindings->bind('api.folder.update', $this->updateFolder(...));
         $webView->bindings->bind('api.folder.delete', $this->deleteFolder(...));
+        $webView->bindings->bind('api.history.search', $this->searchHistory(...));
         $webView->bindings->bind('api.history.clear', $this->clearHistory(...));
         $webView->bindings->bind('api.environment.save', $this->saveEnvironment(...));
         $webView->bindings->bind('api.environment.activate', $this->activateEnvironment(...));
@@ -224,6 +225,14 @@ final readonly class ApiBindings
             $session->collections->deleteFolder($id);
 
             return ['id' => $id];
+        });
+    }
+
+    /** @return array<string, mixed> */
+    public function searchHistory(string $search = ''): array
+    {
+        return $this->attempt(function () use ($search): array {
+            return $this->workspace->active()->requests->history(search: $search);
         });
     }
 

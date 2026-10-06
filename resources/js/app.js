@@ -36,6 +36,12 @@
         exportingCurl: false,
         databaseSwitching: false,
         pendingBindings: 0,
+        historyResults: null,
+        historyQuery: '',
+        historySearchTimer: null,
+        historySearchVersion: 0,
+        historySearchLoading: false,
+        historySearchFailed: false,
         response: null,
         responseBodyView: 'pretty',
         previewObjectUrl: null,
@@ -72,6 +78,7 @@
             mobileMenuButton: $('#mobileMenuButton'),
             collectionsTree: $('#collectionsTree'),
             collectionSearch: $('#collectionSearch'),
+            historySearch: $('#historySearch'),
             historyList: $('#historyList'),
             environmentSelect: $('#environmentSelect'),
             environmentDot: $('#environmentDot'),
@@ -209,7 +216,16 @@
         state.data = {...state.data, ...(data && typeof data === 'object' ? data : {})};
         renderDatabaseSelect();
         renderCollections();
-        renderHistory();
+        if (elements.historySearch.value.trim() && state.data.history.length) {
+            refreshHistory();
+        } else {
+            invalidateHistorySearch();
+            state.historyResults = null;
+            state.historyQuery = '';
+            state.historySearchLoading = false;
+            state.historySearchFailed = false;
+            renderHistory();
+        }
         renderEnvironmentSelect();
         updateRequestHeading();
         if (state.variableSuggestionInput) renderVariableSuggestions();
@@ -301,6 +317,7 @@
         elements.authType.addEventListener('change', renderAuthSection);
         elements.collectionSearch.addEventListener('input', renderCollections);
         elements.collectionsTree.addEventListener('click', handleTreeClick);
+        elements.historySearch.addEventListener('input', scheduleHistorySearch);
         elements.historyList.addEventListener('click', handleHistoryClick);
         elements.environmentSelect.addEventListener('change', activateSelectedEnvironment);
         elements.databaseSelect.addEventListener('change', switchSelectedDatabase);
@@ -1151,16 +1168,73 @@
         closeMobileSidebar();
     }
 
+    function invalidateHistorySearch() {
+        window.clearTimeout(state.historySearchTimer);
+        state.historySearchTimer = null;
+        state.historySearchVersion += 1;
+    }
+
+    function scheduleHistorySearch() {
+        if (state.databaseSwitching) return;
+        invalidateHistorySearch();
+        state.historySearchLoading = true;
+        state.historySearchFailed = false;
+        renderHistory();
+        state.historySearchTimer = window.setTimeout(refreshHistory, 200);
+    }
+
+    async function refreshHistory() {
+        if (state.databaseSwitching) return;
+        invalidateHistorySearch();
+        const version = state.historySearchVersion;
+        const search = elements.historySearch.value.trim();
+        state.historySearchLoading = true;
+        state.historySearchFailed = false;
+        renderHistory();
+
+        try {
+            const entries = await invoke('api.history.search', search);
+
+            if (version !== state.historySearchVersion) return;
+            state.historyResults = entries;
+            state.historyQuery = search;
+        } catch (error) {
+            if (version !== state.historySearchVersion) return;
+            state.historySearchFailed = true;
+            showOperationError(error);
+        } finally {
+            if (version === state.historySearchVersion) {
+                state.historySearchLoading = false;
+                renderHistory();
+            }
+        }
+    }
+
     function renderHistory() {
-        if (!state.data.history.length) {
-            elements.historyList.innerHTML = '<div class="history-empty"><strong>No requests yet</strong><p>Sent requests will be kept locally in SQLite.</p></div>';
+        elements.historyList.setAttribute('aria-busy', state.historySearchLoading ? 'true' : 'false');
+
+        if (state.historySearchLoading) {
+            elements.historyList.innerHTML = '<div class="history-empty"><strong>Loading history…</strong></div>';
+            return;
+        }
+
+        if (state.historySearchFailed) {
+            elements.historyList.innerHTML = '<div class="history-empty"><strong>Unable to load history</strong><p>Try searching again.</p></div>';
+            return;
+        }
+
+        const entries = state.historyResults ?? state.data.history;
+        if (!entries.length) {
+            elements.historyList.innerHTML = state.historyQuery && state.data.history.length
+                ? '<div class="history-empty"><strong>No matching requests</strong><p>Try a different search phrase.</p></div>'
+                : '<div class="history-empty"><strong>No requests yet</strong><p>Sent requests will be kept locally in SQLite.</p></div>';
             return;
         }
 
         let lastDay = '';
         const parts = [];
 
-        state.data.history.forEach((entry) => {
+        entries.forEach((entry) => {
             const day = historyDay(entry.created_at);
 
             if (day !== lastDay) {
@@ -1185,7 +1259,8 @@
         const item = event.target.closest('[data-history-id]');
 
         if (!item) return;
-        const entry = state.data.history.find((history) => history.id === Number(item.dataset.historyId));
+        const entries = state.historyResults ?? state.data.history;
+        const entry = entries.find((history) => history.id === Number(item.dataset.historyId));
 
         if (!entry) return;
         applyRequest(entry.request, {
@@ -1360,6 +1435,15 @@
 
     function setDatabaseBusy(busy) {
         state.databaseSwitching = Boolean(busy);
+
+        if (busy) {
+            invalidateHistorySearch();
+            state.historySearchLoading = false;
+            renderHistory();
+        } else if (elements.historySearch.value.trim() || state.historyQuery) {
+            refreshHistory();
+        }
+
         elements.appShell.classList.toggle('is-database-switching', state.databaseSwitching);
         elements.appShell.setAttribute('aria-busy', state.databaseSwitching ? 'true' : 'false');
         elements.databaseSelect.disabled = busy;
@@ -1381,6 +1465,7 @@
         state.editingEnvironmentId = null;
         state.entitySubmit = null;
         elements.collectionSearch.value = '';
+        elements.historySearch.value = '';
         elements.responseBody.textContent = '';
         elements.responseHeaders.replaceChildren();
         elements.responseErrorType.textContent = '';
@@ -2208,12 +2293,17 @@
             return;
         }
 
+        invalidateHistorySearch();
+        state.historySearchLoading = true;
+        renderHistory();
+
         try {
             await invoke('api.history.clear');
             await refreshWorkspace();
             toast('History cleared.');
         } catch (error) {
             showOperationError(error);
+            refreshHistory();
         }
     }
 

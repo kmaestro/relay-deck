@@ -18,7 +18,7 @@ HTTP requests run in PHP and are not subject to browser CORS restrictions. HTML,
 - Authentication: No Auth, Bearer Token, Basic Auth, and API Key in a header or query parameter.
 - Responses: HTTP status, duration, size, headers, formatted JSON, raw body, and Preview for HTML, SVG, images, and PDF.
 - Collections, nested folders, and saved requests; rename a request through the `⋯` menu.
-- History: the database retains the latest 200 entries, and the interface displays the latest 100.
+- History: the database retains the latest 200 entries, and the interface displays the latest 100. Search by URL, HTTP method, or status runs in SQLite across all retained entries and returns the latest 100 matches.
 - Environments and `{{name}}` variables, including nested values. Autocomplete is available in the URL and the Key/Value fields of the Headers tab.
 - Multiple independent SQLite databases, selectable through **Database** without restarting the application.
 - Export prepared requests to cURL.

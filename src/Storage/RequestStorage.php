@@ -163,14 +163,29 @@ final readonly class RequestStorage
     /**
      * @return list<array<string, mixed>>
      */
-    public function history(int $limit = 100): array
+    public function history(int $limit = 100, string $search = ''): array
     {
         $limit = max(1, min(self::HISTORY_LIMIT, $limit));
+        $search = mb_strtolower(trim($search), 'UTF-8');
+        $where = $search === '' ? '' : <<<'SQL'
+            WHERE instr(relaydeck_lower(url), :search) > 0
+                OR instr(relaydeck_lower(method), :search) > 0
+                OR instr(relaydeck_lower(CASE
+                    WHEN status_code IS NOT NULL THEN CAST(status_code AS TEXT)
+                    WHEN error_type IS NOT NULL THEN 'ERR'
+                    ELSE '—'
+                END), :search) > 0
+            SQL;
         $statement = $this->database->prepare(
             'SELECT id, method, url, status_code, duration_ms, request_json, error_type, error_message, created_at '
-            . 'FROM history ORDER BY id DESC LIMIT :limit',
+            . 'FROM history ' . $where . ' ORDER BY id DESC LIMIT :limit',
         );
         $statement->bindValue('limit', $limit, PDO::PARAM_INT);
+
+        if ($search !== '') {
+            $statement->bindValue('search', $search, PDO::PARAM_STR);
+        }
+
         $statement->execute();
         $rows = $statement->fetchAll();
 
