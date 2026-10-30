@@ -143,6 +143,7 @@
                     <button class="editor-tab" type="button" data-request-tab="auth">Auth</button>
                     <button class="editor-tab" type="button" data-request-tab="headers">Headers <span class="tab-count" id="headersCount">0</span></button>
                     <button class="editor-tab" type="button" data-request-tab="body">Body <span class="tab-dot" id="bodyDot"></span></button>
+                    <button class="editor-tab" type="button" data-request-tab="script">Script</button>
                 </div>
 
                 <div class="editor-content">
@@ -239,6 +240,17 @@
                             <div class="key-value-editor multipart-editor" id="multipartEditor"></div>
                             <p class="upload-limit" id="uploadLimitText">Files are kept in memory only for the current request.</p>
                         </div>
+                    </section>
+
+                    <section class="request-editor script-editor" data-request-panel="script">
+                        <div class="script-heading"><div><span class="eyebrow">phplrt · after response</span><h3>Post-response script</h3><p>Test runs here; its response, history and environment are not changed.</p></div><button class="primary-button" id="runScriptButton" type="button">Test</button></div>
+                        <div class="script-code-editor" id="scriptCodeEditor">
+                            <pre class="script-highlight-layer" aria-hidden="true"><code id="scriptHighlight"></code></pre>
+                            <textarea class="script-source mono" id="scriptSource" spellcheck="false" aria-label="Post-response script" autocapitalize="off" autocomplete="off" placeholder="assert status == 200;&#10;set token = response.json.access_token;"></textarea>
+                        </div>
+                        <div class="script-suggestions is-hidden" id="scriptSuggestions" role="listbox" aria-label="Script suggestions"></div>
+                        <div class="script-help"><code>assert status == 200;</code><code>assert body contains "text";</code><code>set token = response.json.access_token;</code></div>
+                        <pre class="script-output" id="scriptOutput" aria-live="polite">Run the script to see assertion results.</pre>
                     </section>
                 </div>
             </section>

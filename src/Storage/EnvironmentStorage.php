@@ -89,6 +89,54 @@ final readonly class EnvironmentStorage
         return $variables;
     }
 
+    public function setActiveVariable(string $name, string $value, ?bool $secret = null): void
+    {
+        if (preg_match('/^[A-Za-z_][A-Za-z0-9_.-]*$/', $name) !== 1) {
+            throw new ApiClientException(sprintf('Invalid variable name "%s".', $name), 'invalid_variable');
+        }
+
+        $environmentId = $this->activeId();
+        if ($environmentId === null) {
+            throw new ApiClientException('Select an environment before setting a response variable.', 'no_active_environment');
+        }
+
+        $statement = $this->database->prepare(
+            'INSERT INTO environment_variables (environment_id, name, value, is_secret, enabled, sort_order) '
+            . 'VALUES (:environment_id, :name, :value, :is_secret, 1, '
+            . '(SELECT COALESCE(MAX(sort_order), -1) + 1 FROM environment_variables WHERE environment_id = :sort_environment_id)) '
+            . 'ON CONFLICT(environment_id, name) DO UPDATE SET '
+            . 'value = excluded.value, '
+            . 'is_secret = CASE WHEN :set_secret = 1 THEN 1 ELSE environment_variables.is_secret END, enabled = 1',
+        );
+        $statement->execute([
+            'environment_id' => $environmentId,
+            'sort_environment_id' => $environmentId,
+            'name' => $name,
+            'value' => $value,
+            'is_secret' => $secret === true ? 1 : 0,
+            'set_secret' => $secret === null ? 0 : 1,
+        ]);
+        $this->database->prepare("UPDATE environments SET updated_at = datetime('now') WHERE id = :id")
+            ->execute(['id' => $environmentId]);
+    }
+
+    /** @param list<array{name: string, value: string, secret: ?bool}> $variables */
+    public function setActiveVariables(array $variables): void
+    {
+        $this->database->beginTransaction();
+        try {
+            foreach ($variables as $variable) {
+                $this->setActiveVariable($variable['name'], $variable['value'], $variable['secret']);
+            }
+            $this->database->commit();
+        } catch (\Throwable $exception) {
+            if ($this->database->inTransaction()) {
+                $this->database->rollBack();
+            }
+            throw $exception;
+        }
+    }
+
     /**
      * @param array<string, mixed> $data
      *

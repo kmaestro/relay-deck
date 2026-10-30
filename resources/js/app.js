@@ -54,6 +54,8 @@
         activeVariableSuggestion: -1,
         variableCompletion: null,
         variableSuggestionInput: null,
+        scriptSuggestionItems: [],
+        activeScriptSuggestion: 0,
     };
 
     const elements = {};
@@ -87,6 +89,11 @@
             manageDatabasesButton: $('#manageDatabasesButton'),
             requestPane: $('.request-pane'),
             requestForm: $('#requestForm'),
+            runScriptButton: $('#runScriptButton'),
+            scriptSource: $('#scriptSource'),
+            scriptOutput: $('#scriptOutput'),
+            scriptHighlight: $('#scriptHighlight'),
+            scriptSuggestions: $('#scriptSuggestions'),
             requestTitle: $('#requestTitle'),
             dirtyDot: $('#dirtyDot'),
             methodSelect: $('#methodSelect'),
@@ -279,11 +286,28 @@
         });
 
         elements.requestPane.addEventListener('input', markDirty);
+        elements.scriptSource.addEventListener('input', () => {
+            markDirty();
+            renderScriptHighlight();
+            renderScriptSuggestions();
+        });
+        elements.scriptSource.addEventListener('scroll', syncScriptHighlightScroll);
+        elements.scriptSource.addEventListener('keydown', handleScriptEditorKeydown);
+        elements.scriptSource.addEventListener('keyup', (event) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+                renderScriptSuggestions();
+            }
+        });
+        elements.scriptSource.addEventListener('focus', renderScriptSuggestions);
+        elements.scriptSource.addEventListener('blur', () => window.setTimeout(hideScriptSuggestions, 120));
+        elements.scriptSuggestions.addEventListener('mousedown', (event) => event.preventDefault());
+        elements.scriptSuggestions.addEventListener('click', handleScriptSuggestionClick);
         elements.requestPane.addEventListener('change', () => {
             markDirty();
             updateEditorCounts();
         });
         elements.requestForm.addEventListener('submit', sendRequest);
+        elements.runScriptButton.addEventListener('click', runScript);
         elements.exportCurlButton.addEventListener('click', exportCurl);
         elements.copyCurlButton.addEventListener('click', copyCurlCommand);
         elements.methodSelect.addEventListener('change', () => {
@@ -614,6 +638,7 @@
             body: collectBody(),
             auth: collectAuth(),
             timeout: Number(elements.timeoutInput.value || 30),
+            postResponseScript: elements.scriptSource.value,
         };
     }
 
@@ -624,11 +649,14 @@
         state.applying = true;
         state.currentSavedId = options.savedId ?? null;
         state.currentName = options.name || 'Untitled request';
+        hideScriptSuggestions();
         elements.methodSelect.value = normalized.method || 'GET';
         elements.methodWrap.dataset.method = elements.methodSelect.value;
         elements.urlInput.value = normalized.url || '';
         hideVariableSuggestions();
         elements.timeoutInput.value = normalized.timeout || 30;
+        elements.scriptSource.value = normalized.postResponseScript || '';
+        renderScriptHighlight();
         renderKeyValueRows(elements.paramsEditor, normalized.query || normalized.params || []);
         renderKeyValueRows(elements.headersEditor, normalized.headers || []);
         elements.jsonBodyInput.value = body.type === 'json' ? body.content || '' : '';
@@ -1533,8 +1561,13 @@
         showResponseState('loading');
 
         try {
-            const response = await invoke('api.send', request);
+            const scriptSource = elements.scriptSource.value.trim();
+            const scripted = scriptSource
+                ? await invoke('api.script.run', {request, source: scriptSource})
+                : null;
+            const response = scripted ? scripted.response : await invoke('api.send', request);
             showResponse(response);
+            if (scripted) renderScriptResults(scripted);
         } catch (error) {
             showResponseError(error instanceof BindingError ? error.payload : {
                 type: 'application_error',
@@ -1551,6 +1584,164 @@
             } catch (error) {
                 toast('The request finished, but history could not be refreshed.', true);
             }
+        }
+    }
+
+    async function runScript() {
+        if (state.sending || state.databaseSwitching) return;
+        state.sending = true;
+        elements.runScriptButton.disabled = true;
+        elements.scriptOutput.textContent = 'Sending request and testing script…';
+        try {
+            const result = await invoke('api.script.run', {request: collectRequest(), source: elements.scriptSource.value, testMode: true});
+            renderScriptResults(result);
+        } catch (error) {
+            const payload = error instanceof BindingError ? error.payload : {
+                message: error.message || 'Unable to test the script.', type: 'application_error', details: {},
+            };
+            elements.scriptOutput.textContent = payload.message || 'The script could not be tested.';
+            elements.scriptOutput.classList.remove('has-success');
+            elements.scriptOutput.classList.add('has-failure');
+        } finally {
+            state.sending = false;
+            elements.runScriptButton.disabled = false;
+        }
+    }
+
+    function renderScriptResults(result) {
+        const failed = result.checks.filter((check) => !check.passed).length;
+        const responseSummary = result.response
+            ? `HTTP ${result.response.statusCode} · ${formatDuration(result.response.durationMs)}`
+            : '';
+        elements.scriptOutput.textContent = [responseSummary, ...result.checks.map((check) => `${check.passed ? '✓ PASS' : '✕ FAIL'}  ${check.label}`)].filter(Boolean).join('\n')
+            + (result.checks.length ? `\n\n${result.checks.length - failed}/${result.checks.length} checks passed` : '')
+            + (result.testMode && result.wouldUpdateVariables.length ? `\nWould update (test mode): ${result.wouldUpdateVariables.join(', ')}` : '')
+            + (result.updatedVariables.length ? `\nUpdated environment variables: ${result.updatedVariables.join(', ')}` : '')
+            + (!result.checks.length && !result.wouldUpdateVariables.length && !result.updatedVariables.length ? 'Script completed.' : '');
+        elements.scriptOutput.classList.toggle('has-failure', failed > 0);
+        elements.scriptOutput.classList.toggle('has-success', failed === 0);
+    }
+
+    function renderScriptHighlight() {
+        const source = elements.scriptSource.value;
+        const pattern = /\/\/[^\n]*|"(?:\\.|[^"\\])*"|\b(?:assert|set|status|body|contains)\b|response(?:\.json)?(?:\.[A-Za-z_][A-Za-z0-9_-]*)*|\b\d+\b|==|=/g;
+        let cursor = 0;
+        let html = '';
+        let match;
+        while ((match = pattern.exec(source)) !== null) {
+            html += escapeHtml(source.slice(cursor, match.index));
+            const value = match[0];
+            const className = value.startsWith('//') ? 'script-token-comment'
+                : value.startsWith('"') ? 'script-token-string'
+                    : value.startsWith('response.') ? 'script-token-path'
+                        : /^\d/.test(value) ? 'script-token-number'
+                            : value === '=' || value === '==' ? 'script-token-operator' : 'script-token-keyword';
+            html += `<span class="${className}">${escapeHtml(value)}</span>`;
+            cursor = pattern.lastIndex;
+        }
+        html += escapeHtml(source.slice(cursor));
+        elements.scriptHighlight.innerHTML = html + (source.endsWith('\n') ? ' ' : '');
+        syncScriptHighlightScroll();
+    }
+
+    function syncScriptHighlightScroll() {
+        elements.scriptHighlight.parentElement.scrollTop = elements.scriptSource.scrollTop;
+        elements.scriptHighlight.parentElement.scrollLeft = elements.scriptSource.scrollLeft;
+    }
+
+    function responseJsonPaths() {
+        const paths = [];
+        try {
+            const response = state.response;
+            if (!response || response.bodyEncoding === 'base64') throw new Error('No JSON response');
+            const root = JSON.parse(response.body || '');
+            const visit = (value, path, depth) => {
+                if (!value || typeof value !== 'object' || depth > 4) return;
+                Object.entries(value).forEach(([key, child]) => {
+                    const nextPath = `${path}.${key}`;
+                    if (/^[A-Za-z_][A-Za-z0-9_-]*$/.test(key)) paths.push(nextPath);
+                    visit(child, nextPath, depth + 1);
+                });
+            };
+            visit(root, 'response.json', 0);
+        } catch (_error) {
+            // Suggestions fall back to common token fields until a JSON response is available.
+        }
+        return [...new Set([...paths, 'response.json.access_token', 'response.json.token', 'response.json.data.token'])];
+    }
+
+    function scriptSuggestionContext() {
+        const cursor = elements.scriptSource.selectionStart;
+        const before = elements.scriptSource.value.slice(0, cursor);
+        const line = before.slice(before.lastIndexOf('\n') + 1);
+        if ((line.match(/(?<!\\)"/g) || []).length % 2 === 1) return null;
+        const token = line.match(/[A-Za-z0-9_.-]*$/)?.[0] || '';
+        let candidates = [];
+        if (/^\s*set\s+[A-Za-z_][A-Za-z0-9_.-]*\s*=\s*(?:response(?:\.json)?(?:\.[A-Za-z0-9_.-]*)?)?$/.test(line)) {
+            candidates = responseJsonPaths().map((value) => ({value, detail: 'JSON response field'}));
+        } else if (/^\s*assert\s*$/.test(line)) {
+            candidates = [{value: 'status ', detail: 'check HTTP status'}, {value: 'body ', detail: 'check response body'}];
+        } else if (/^\s*assert\s+body\s*$/.test(line)) {
+            candidates = [{value: 'contains ', detail: 'check for text'}];
+        } else if (/^\s*assert\s+status\s*$/.test(line)) {
+            candidates = [{value: '== ', detail: 'compare status code'}];
+        } else if (/^\s*set\s*$/.test(line)) {
+            candidates = currentEnvironmentVariableNames();
+        } else if (/^\s*$/.test(line) || /^(?:a|as|ass|assert|s|se|set)$/.test(token)) {
+            candidates = [{value: 'assert ', detail: 'post-response check'}, {value: 'set ', detail: 'save response field'}];
+        }
+        const lower = token.toLowerCase();
+        candidates = candidates.filter((item) => item.value.toLowerCase().startsWith(lower) && item.value.trim().toLowerCase() !== lower);
+        return candidates.length ? {candidates: candidates.slice(0, 12), replaceStart: cursor - token.length, replaceEnd: elements.scriptSource.selectionEnd} : null;
+    }
+
+    function currentEnvironmentVariableNames() {
+        const environment = state.data.environments.find((item) => item.id === state.data.activeEnvironmentId);
+        return (environment?.variables || []).map((variable) => ({value: `${variable.name} `, detail: 'environment variable'}));
+    }
+
+    function renderScriptSuggestions() {
+        const context = scriptSuggestionContext();
+        if (!context) {
+            hideScriptSuggestions();
+            return;
+        }
+        state.scriptSuggestionItems = context.candidates.map((item) => ({...item, ...context}));
+        state.activeScriptSuggestion = 0;
+        elements.scriptSuggestions.innerHTML = state.scriptSuggestionItems.map((item, index) => (
+            `<button class="script-suggestion${index === 0 ? ' is-active' : ''}" type="button" role="option" aria-selected="${index === 0}" data-script-suggestion="${index}"><span>${escapeHtml(item.value.trim())}</span><small>${escapeHtml(item.detail)}</small></button>`
+        )).join('');
+        elements.scriptSuggestions.classList.remove('is-hidden');
+    }
+
+    function hideScriptSuggestions() {
+        elements.scriptSuggestions.classList.add('is-hidden');
+        state.scriptSuggestionItems = [];
+        state.activeScriptSuggestion = 0;
+    }
+
+    function chooseScriptSuggestion(index) {
+        const item = state.scriptSuggestionItems[index];
+        if (!item) return;
+        elements.scriptSource.setRangeText(item.value, item.replaceStart, item.replaceEnd, 'end');
+        elements.scriptSource.focus();
+        renderScriptHighlight();
+        markDirty();
+        renderScriptSuggestions();
+    }
+
+    function handleScriptSuggestionClick(event) {
+        const button = event.target.closest('[data-script-suggestion]');
+        if (button) chooseScriptSuggestion(Number(button.dataset.scriptSuggestion));
+    }
+
+    function handleScriptEditorKeydown(event) {
+        if (elements.scriptSuggestions.classList.contains('is-hidden')) return;
+        if (event.key === 'Enter' || event.key === 'Tab') {
+            event.preventDefault();
+            chooseScriptSuggestion(state.activeScriptSuggestion);
+        } else if (event.key === 'Escape') {
+            hideScriptSuggestions();
         }
     }
 
