@@ -8,6 +8,7 @@ use ApiClient\Application\WorkspaceManager;
 use ApiClient\DTO\HttpRequest;
 use ApiClient\Exception\ApiClientException;
 use ApiClient\Http\HttpRequestService;
+use ApiClient\Script\ScriptLanguage;
 use Boson\WebView\WebView;
 use Throwable;
 
@@ -26,6 +27,7 @@ final readonly class ApiBindings
     {
         $webView->bindings->bind('api.bootstrap', $this->bootstrap(...));
         $webView->bindings->bind('api.send', $this->send(...));
+        $webView->bindings->bind('api.script.run', $this->runScript(...));
         $webView->bindings->bind('api.request.curl', $this->exportCurl(...));
         $webView->bindings->bind('api.request.save', $this->saveRequest(...));
         $webView->bindings->bind('api.request.rename', $this->renameRequest(...));
@@ -87,6 +89,70 @@ final readonly class ApiBindings
 
             return $this->failure($exception);
         }
+    }
+
+    /** @param array<string, mixed> $payload
+     *  @return array<string, mixed>
+     */
+    public function runScript(array $payload): array
+    {
+        return $this->attempt(function () use ($payload): array {
+            $program = (new ScriptLanguage())->parse((string) ($payload['source'] ?? ''));
+            if (!is_array($payload['request'] ?? null)) {
+                throw new \RuntimeException('The request editor data is missing.');
+            }
+            $request = HttpRequest::fromArray($payload['request']);
+            $session = $this->workspace->active();
+            $testMode = !empty($payload['testMode']);
+            $response = $this->http->send($request, $session->environments->activeVariables());
+            if (!$testMode) {
+                $session->requests->addHistory($request, $response);
+            }
+            $updatedVariables = [];
+            if ($program['variables'] !== []) {
+                $responseData = json_decode($response->body, true);
+                if (!is_array($responseData)) {
+                    throw new \RuntimeException('The response is not a JSON object, so response variables cannot be read.');
+                }
+                foreach ($program['variables'] as $assignment) {
+                    $value = $responseData;
+                    foreach ($assignment['path'] as $segment) {
+                        if (!is_array($value) || !array_key_exists($segment, $value)) {
+                            throw new \RuntimeException(sprintf('Response field "%s" was not found.', implode('.', $assignment['path'])));
+                        }
+                        $value = $value[$segment];
+                    }
+                    if ($value === null) {
+                        throw new \RuntimeException(sprintf('Response field "%s" is null.', implode('.', $assignment['path'])));
+                    }
+                    $updatedVariables[] = [
+                        'name' => $assignment['name'],
+                        'value' => is_scalar($value) ? (string) $value : (string) json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        'secret' => null,
+                    ];
+                }
+                if (!$testMode) {
+                    $session->environments->setActiveVariables($updatedVariables);
+                }
+            }
+            $checks = array_map(static function (array $assertion) use ($response): array {
+                $passed = $assertion['type'] === 'status'
+                    ? $response->statusCode === $assertion['value']
+                    : str_contains($response->body, $assertion['value']);
+                $label = $assertion['type'] === 'status'
+                    ? 'status == ' . $assertion['value']
+                    : 'body contains ' . json_encode($assertion['value'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                return ['label' => $label, 'passed' => $passed];
+            }, $program['assertions']);
+
+            return [
+                'response' => $response->jsonSerialize(),
+                'checks' => $checks,
+                'updatedVariables' => $testMode ? [] : array_column($updatedVariables, 'name'),
+                'wouldUpdateVariables' => $testMode ? array_column($updatedVariables, 'name') : [],
+                'testMode' => $testMode,
+            ];
+        });
     }
 
     /**

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f2dfc62f0ca3b8b75134456e203bdc87",
+    "content-hash": "c0e7e3b98ede5e99e699b8580e6e8da9",
     "packages": [
         {
             "name": "boson-php/cpu-info",
@@ -863,6 +863,989 @@
                 "source": "https://github.com/php-ffi/env"
             },
             "time": "2025-05-08T15:03:58+00:00"
+        },
+        {
+            "name": "phplrt/exception",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/exception.git",
+                "reference": "b5df39f3661b8651baba684bb17f0d69ad366f98"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/exception/zipball/b5df39f3661b8651baba684bb17f0d69ad366f98",
+                "reference": "b5df39f3661b8651baba684bb17f0d69ad366f98",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/lexer-contracts": "^4.2",
+                "phplrt/parser-contracts": "^4.2",
+                "phplrt/position": "^4.2",
+                "phplrt/source": "^4.2"
+            },
+            "require-dev": {
+                "ext-intl": "*",
+                "ext-mbstring": "*",
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Exception\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt library to display parsing errors",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "error",
+                "exception",
+                "formatter",
+                "parsing",
+                "printer"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/exception"
+            },
+            "time": "2026-10-15T12:10:17+00:00"
+        },
+        {
+            "name": "phplrt/lexer",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/lexer.git",
+                "reference": "ced66a094f69d4f874d70923eabda290ac1ef63e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/lexer/zipball/ced66a094f69d4f874d70923eabda290ac1ef63e",
+                "reference": "ced66a094f69d4f874d70923eabda290ac1ef63e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pcre": "*",
+                "php": "^8.1",
+                "phplrt/lexer-contracts": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "provide": {
+                "phplrt/lexer-contracts-implementation": "^4.0"
+            },
+            "require-dev": {
+                "ext-mbstring": "*",
+                "phplrt/exception": "^4.2",
+                "phplrt/lexer-builder": "^4.2",
+                "phplrt/source": "^4.2",
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant",
+                "phplrt/exception": "Renders the syntax errors along with the fragment of the source code they occurred in"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Lexer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt lexer library that can be used for scanners implementation using PCRE",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "lexer",
+                "parsing",
+                "regex",
+                "scanner",
+                "stream",
+                "token",
+                "tokenizer"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/lexer"
+            },
+            "time": "2026-10-12T23:29:56+00:00"
+        },
+        {
+            "name": "phplrt/lexer-builder",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/lexer-builder.git",
+                "reference": "4280d42b54638a02f65e76ed365651260107b908"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/lexer-builder/zipball/4280d42b54638a02f65e76ed365651260107b908",
+                "reference": "4280d42b54638a02f65e76ed365651260107b908",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/exception": "^4.2",
+                "phplrt/lexer": "^4.2",
+                "phplrt/source-contracts": "^4.2",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Lexer\\Builder\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt component for assembling a lexer",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "build",
+                "compiler",
+                "lexer",
+                "parsing",
+                "regex",
+                "scanner",
+                "stream",
+                "token",
+                "tokenizer"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/lexer-builder"
+            },
+            "time": "2026-10-16T08:43:44+00:00"
+        },
+        {
+            "name": "phplrt/lexer-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/lexer-contracts.git",
+                "reference": "8df53e70664674b0defeaa1212056b38ca3685f6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/lexer-contracts/zipball/8df53e70664674b0defeaa1212056b38ca3685f6",
+                "reference": "8df53e70664674b0defeaa1212056b38ca3685f6",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Lexer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt lexer abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "abstractions",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "lexer",
+                "parsing",
+                "regex",
+                "standards",
+                "stream",
+                "token",
+                "tokenizer"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/lexer-contracts"
+            },
+            "time": "2026-10-15T12:09:22+00:00"
+        },
+        {
+            "name": "phplrt/parser",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/parser.git",
+                "reference": "5ce04660ed44b22c4c595b6a8a180f97ef16c2fe"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/parser/zipball/5ce04660ed44b22c4c595b6a8a180f97ef16c2fe",
+                "reference": "5ce04660ed44b22c4c595b6a8a180f97ef16c2fe",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-pcre": "*",
+                "php": "^8.1",
+                "phplrt/lexer": "^4.2",
+                "phplrt/parser-contracts": "^4.2",
+                "phplrt/position": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "provide": {
+                "phplrt/parser-contracts-implementation": "^4.0"
+            },
+            "require-dev": {
+                "phplrt/exception": "^4.2",
+                "phplrt/parser-builder": "^4.2",
+                "phplrt/source": "^4.2",
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant",
+                "phplrt/exception": "Renders the syntax errors along with the fragment of the source code they occurred in"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Parser\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt parser library",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "LPeg",
+                "language",
+                "lookahead",
+                "parser",
+                "peg",
+                "php",
+                "tracing"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/parser"
+            },
+            "time": "2026-10-16T08:43:49+00:00"
+        },
+        {
+            "name": "phplrt/parser-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/parser-contracts.git",
+                "reference": "472a952aaaa4bea475a60a9c876abdee74a4e4bc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/parser-contracts/zipball/472a952aaaa4bea475a60a9c876abdee74a4e4bc",
+                "reference": "472a952aaaa4bea475a60a9c876abdee74a4e4bc",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/lexer-contracts": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Parser\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt parser abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "abstractions",
+                "analysis",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "language",
+                "parser",
+                "php",
+                "standards",
+                "syntax"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/parser-contracts"
+            },
+            "time": "2026-10-15T12:08:13+00:00"
+        },
+        {
+            "name": "phplrt/position",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/position.git",
+                "reference": "2f4bcfa40967a9c73b7b772d5c3a42ee801aff46"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/position/zipball/2f4bcfa40967a9c73b7b772d5c3a42ee801aff46",
+                "reference": "2f4bcfa40967a9c73b7b772d5c3a42ee801aff46",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/position-contracts": "^4.2",
+                "phplrt/position-factory-contracts": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "provide": {
+                "phplrt/position-contracts-implementation": "^4.0",
+                "phplrt/position-factory-contracts-implementation": "^4.0"
+            },
+            "require-dev": {
+                "phplrt/source": "^4.2",
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Position\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt position package",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "analyzing",
+                "column",
+                "line",
+                "location",
+                "offset",
+                "position",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/position"
+            },
+            "time": "2026-10-12T23:31:53+00:00"
+        },
+        {
+            "name": "phplrt/position-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/position-contracts.git",
+                "reference": "b63daaea00c7dae74b222a94d97cbc8f2be3a162"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/position-contracts/zipball/b63daaea00c7dae74b222a94d97cbc8f2be3a162",
+                "reference": "b63daaea00c7dae74b222a94d97cbc8f2be3a162",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Position\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt position abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "column",
+                "line",
+                "location",
+                "position",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/position-contracts"
+            },
+            "time": "2026-10-12T22:31:16+00:00"
+        },
+        {
+            "name": "phplrt/position-factory-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/position-factory-contracts.git",
+                "reference": "cef59452df997b220207781ae4bf1b9ef28fb64c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/position-factory-contracts/zipball/cef59452df997b220207781ae4bf1b9ef28fb64c",
+                "reference": "cef59452df997b220207781ae4bf1b9ef28fb64c",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/position-contracts": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Position\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt position factory abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "column",
+                "factory",
+                "line",
+                "location",
+                "position",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/position-factory-contracts"
+            },
+            "time": "2026-10-12T23:31:42+00:00"
+        },
+        {
+            "name": "phplrt/runtime",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/runtime.git",
+                "reference": "8aea53cd621a94a6b323cc8d6ac06effdfa0a483"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/runtime/zipball/8aea53cd621a94a6b323cc8d6ac06effdfa0a483",
+                "reference": "8aea53cd621a94a6b323cc8d6ac06effdfa0a483",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/lexer": "^4.2",
+                "phplrt/parser": "^4.2",
+                "phplrt/source": "^4.2"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "metapackage",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt runtime libraries",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "runtime"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/runtime"
+            },
+            "time": "2026-10-12T23:34:10+00:00"
+        },
+        {
+            "name": "phplrt/source",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/source.git",
+                "reference": "2df423fb5a05fd16f1d8889123a2944a6e806c69"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/source/zipball/2df423fb5a05fd16f1d8889123a2944a6e806c69",
+                "reference": "2df423fb5a05fd16f1d8889123a2944a6e806c69",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/source-contracts": "^4.2",
+                "phplrt/source-factory-contracts": "^4.2"
+            },
+            "provide": {
+                "phplrt/source-contracts-implementation": "^4.0",
+                "phplrt/source-factory-contracts-implementation": "^4.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/polyfill.php"
+                ],
+                "psr-4": {
+                    "Phplrt\\Source\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt sources package",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "abstraction",
+                "directory",
+                "file",
+                "file system",
+                "fs",
+                "reader"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/source"
+            },
+            "time": "2026-10-12T23:32:11+00:00"
+        },
+        {
+            "name": "phplrt/source-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/source-contracts.git",
+                "reference": "6fcd59e10d586bfd4e387aff3d387b00c4080462"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/source-contracts/zipball/6fcd59e10d586bfd4e387aff3d387b00c4080462",
+                "reference": "6fcd59e10d586bfd4e387aff3d387b00c4080462",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Source\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt source abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "disk",
+                "file",
+                "io",
+                "read",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/source-contracts"
+            },
+            "time": "2026-10-12T22:31:34+00:00"
+        },
+        {
+            "name": "phplrt/source-factory-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/source-factory-contracts.git",
+                "reference": "59a7070f6e520ecc03b9544d88edfa2ea874e9bb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/source-factory-contracts/zipball/59a7070f6e520ecc03b9544d88edfa2ea874e9bb",
+                "reference": "59a7070f6e520ecc03b9544d88edfa2ea874e9bb",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Source\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt source factory abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "disk",
+                "factory",
+                "file",
+                "io",
+                "read",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/source-factory-contracts"
+            },
+            "time": "2026-10-12T23:30:56+00:00"
         },
         {
             "name": "psr/container",

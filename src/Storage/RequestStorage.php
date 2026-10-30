@@ -54,9 +54,11 @@ final readonly class RequestStorage
         }
 
         $request = HttpRequest::fromArray($requestData);
+        $storedRequest = $request->toArray(includeFileContents: false);
+        $storedRequest['postResponseScript'] = (string) ($requestData['postResponseScript'] ?? '');
         $this->assertLocation($collectionId, $folderId);
         $encoded = json_encode(
-            $request->toArray(includeFileContents: false),
+            $storedRequest,
             JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
         );
         $id = isset($data['id']) && $data['id'] !== null && $data['id'] !== ''

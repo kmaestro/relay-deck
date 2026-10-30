@@ -22,7 +22,21 @@ HTTP requests run in PHP and are not subject to browser CORS restrictions. HTML,
 - Environments and `{{name}}` variables, including nested values. Autocomplete is available in the URL and the Key/Value fields of the Headers tab.
 - Multiple independent SQLite databases, selectable through **Database** without restarting the application.
 - Export prepared requests to cURL.
+- Per-request API scripts in a built-in phplrt-based language, with response checks and JSON values saved to the active environment.
 - Resizable sidebar and a responsive interface.
+
+## API scripts
+
+Each saved request has its own script on the **Script** tab. Configure `/login` with the regular request fields, then add post-response code:
+
+```text
+assert status == 201;
+set token = response.json.access_token;
+```
+
+When you click **Send**, the script runs after that request's response. `set token = response.json.access_token;` reads `access_token` from the JSON and creates or updates the `token` variable in the active environment. Nested fields are supported, such as `response.json.data.token`. The updated variable is immediately available as `{{token}}` in subsequent requests.
+
+Scripts support HTTP status and response body substring checks, plus assigning variables from JSON. The editor highlights syntax and suggests commands, environment variables, and JSON paths from the latest response. **Test** sends the request and runs the script, displaying results in the script panel; it does not change request history, the main response panel, or environment variables. The request still reaches the configured server. With **Send**, the request and script run normally, variables are saved, and the request is added to history. The language is intentionally limited to these commands and does not execute arbitrary PHP code.
 
 ## Requirements
 
